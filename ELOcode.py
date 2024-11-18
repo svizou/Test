@@ -46,17 +46,22 @@ print(ClubELO)
 
 # Defining ELO constants
 k = 40         # ELO factor, can be adjusted
-home_adv = 30  # Additional ELO points for the home team
-home_elo = 1000
-away_elo = 1000
+home_adv = 30  # Additional ELO points for the home team to account for home advantage
 
 # Defining function to calculate ELO score
-def calculate_elo_update(home_elo, away_elo, actual_home_score, k, home_adv):
+def calculate_elo_update(home_elo, away_elo, actual_home_score, k_factor, home_adv): 
     # Adjusting home ELO for home advantage
     home_elo_adjusted = home_elo + home_adv
-
+    
     # Calculating expected scores
     expected_home_score = 1 / (1 + 10 ** ((away_elo - home_elo_adjusted) / 400))
+    expected_away_score = 1 - expected_home_score
+    
+    # Calculate new Elo ratings based on actual outcome
+    new_home_elo = home_elo + k_factor * (actual_home_score - expected_home_score)
+    new_away_elo = away_elo + k_factor * ((1 - actual_home_score) - expected_away_score)
+    
+    return new_home_elo, new_away_elo
 
 # Sort the DataFrame by date in ascending order
 Scores_Results_22_23 = Scores_Results_22_23.sort_values(by='Date').reset_index(drop=True)
@@ -80,8 +85,3 @@ for _, match in Scores_Results_22_23.iterrows():
 
 # Display updated ClubELO DataFrame
 print(ClubELO)
-
-
-with open("ELOcode.py", "r") as file:
-    for line in file:
-        print(repr(line))
